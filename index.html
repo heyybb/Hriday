@@ -14,120 +14,73 @@
 @media(max-width:760px){.app-shell{display:block}.sidebar{position:fixed;z-index:60;left:0;top:0;width:270px;transform:translateX(-101%);transition:transform .2s;height:100dvh;box-shadow:12px 0 40px rgba(0,0,0,.12)}.sidebar.open{transform:translateX(0)}.topbar{height:67px;padding:0 15px}.mobile-menu{display:grid}.topbar .eyebrow{display:none}.page-title{font-size:26px}.top-actions{gap:6px}.searchbox{width:38px;padding:9px;justify-content:center}.searchbox input{display:none}.content{padding:18px 14px 36px}.hero{padding:25px 22px;min-height:190px}.hero h2{font-size:37px}.hero-aside{display:none}.metrics{gap:8px}.metric{padding:13px}.metric-value{font-size:26px}.metric-label{font-size:9px}.quick-grid{gap:8px}.quick-card{padding:12px}.section-heading{margin-top:22px}.section-heading h2{font-size:24px}.module-toolbar .btn{flex:0 0 auto}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.settings-grid,.split-layout,.report-grid{grid-template-columns:1fr}.chat-layout{grid-template-columns:110px minmax(0,1fr)}.chat-channels{padding:8px}.chat-channel{padding:9px 7px;font-size:10px;overflow:hidden}.chat-top{padding:12px}.chat-top strong{font-size:20px}.chat-messages{padding:12px;min-height:250px}.chat-message{max-width:90%}.login-wrap{grid-template-columns:1fr;padding:16px;gap:10px}.login-brand{padding:16px 8px 5px;min-height:230px}.login-brand h1{margin:30px 0 10px;font-size:54px}.login-brand p{font-size:11px;margin:0}.login-brand .login-foot{margin-top:20px}.login-card-wrap{align-items:start}.login-card{padding:23px}.preview-ribbon{align-items:flex-start}.preview-ribbon .btn{white-space:nowrap}.panel{padding:15px}.bar-line{grid-template-columns:75px minmax(0,1fr) 55px}}
 
 
-/* Hriday HQ refinement: full-viewport canvas + logo-controlled navigation */
-html,body,#app{width:100%;min-width:320px;min-height:100%;margin:0}
-body{overflow-x:hidden}
-.app-shell{display:block;width:100%;min-height:100vh;max-width:none;margin:0}
-.main{width:100%;min-height:100vh;max-width:none}
-.content{width:100%;max-width:none;margin:0;padding:clamp(18px,2.6vw,38px) clamp(16px,3vw,48px) 56px}
-.sidebar{position:fixed;z-index:80;left:0;top:0;bottom:0;width:min(300px,88vw);height:100dvh;min-height:0;transform:translateX(-105%);transition:transform .26s cubic-bezier(.2,.8,.2,1);box-shadow:18px 0 55px rgba(9,32,22,.22);border-right:1px solid rgba(198,161,91,.28)}
-.sidebar.open{transform:translateX(0)}
-.nav-scrim{position:fixed;inset:0;background:rgba(12,27,20,.35);backdrop-filter:blur(3px);z-index:75;opacity:0;pointer-events:none;transition:opacity .2s}
-.nav-scrim.open{opacity:1;pointer-events:auto}
-.topbar{width:100%;padding:0 clamp(16px,3vw,48px);z-index:30}
-.top-left{display:flex;align-items:center;gap:15px}
-.logo-toggle{width:46px;height:46px;flex:0 0 46px;border:1px solid var(--gold);border-radius:50%;background:var(--green);color:var(--gold-2);font:500 28px var(--font-display);box-shadow:0 5px 18px rgba(15,61,46,.16);transition:transform .18s,box-shadow .18s}
-.logo-toggle:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(15,61,46,.22)}
-.sidebar .brand{cursor:pointer}
-.mobile-menu{display:none!important}
-@media(min-width:761px){.sidebar{width:300px}.content{padding-top:30px}.hero{min-height:205px}.topbar{height:82px}}
-@media(max-width:760px){.topbar{height:72px;padding:0 14px}.logo-toggle{width:40px;height:40px;flex-basis:40px;font-size:25px}.top-left{gap:10px}.page-title{font-size:clamp(21px,5vw,27px)}.topbar .eyebrow{display:none}.content{padding:18px 14px 34px}.searchbox{width:38px}.sidebar{width:min(300px,88vw)}}
 
-
-/* Full-width fix: override any inherited centered preview/container rules */
-html, body { width:100% !important; max-width:none !important; margin:0 !important; padding:0 !important; }
-body { display:block !important; overflow-x:hidden !important; }
-#app { display:block !important; width:100% !important; max-width:none !important; margin:0 !important; padding:0 !important; }
-#app > .app-shell, .app-shell { display:block !important; width:100% !important; max-width:none !important; min-width:0 !important; margin:0 !important; padding:0 !important; }
-.app-shell > .main, .main { display:block !important; width:100% !important; max-width:none !important; min-width:0 !important; margin:0 !important; }
-.topbar { width:100% !important; max-width:none !important; }
-.content { width:100% !important; max-width:none !important; margin:0 !important; }
-
-/* FINAL RELEASE OVERRIDES — normalize full-width behavior across GitHub Pages and preview */
-:root { color-scheme: light; }
-html, body { width:100%; min-width:320px; max-width:none; margin:0; padding:0; }
-body { overflow-x:hidden; }
+/* Consolidated responsive layout fix: one authoritative set of viewport rules */
+html, body { width:100%; min-width:320px; max-width:none; min-height:100%; margin:0; padding:0; }
+body { display:block; overflow-x:hidden; }
 #app { display:block; width:100%; min-width:0; max-width:none; min-height:100vh; margin:0; padding:0; }
-#app.app-loading { display:grid; }
-.app-shell, #app > .app-shell { display:block; width:100%; min-width:0; max-width:none; min-height:100vh; margin:0; padding:0; }
-.main, .app-shell > .main { display:block; position:relative; width:100%; min-width:0; max-width:none; min-height:100vh; margin:0; padding:0; }
-.topbar { width:100%; min-width:0; max-width:none; margin:0; }
-.content { display:block; width:100%; min-width:0; max-width:none; margin:0; }
-/* Premium responsive canvas */
-.hero { width:100%; }
-.metrics, .quick-grid, .dashboard-grid, .table-wrap, .panel { min-width:0; }
-img, video, canvas, svg { max-width:100%; }
-button, input, select, textarea { max-width:100%; }
-/* Drawer is hidden until the H monogram is clicked on every screen size */
-.sidebar { position:fixed; z-index:100; left:0; top:0; bottom:0; width:min(320px,88vw); height:100dvh; min-height:0; max-height:100dvh; overflow-y:auto; transform:translateX(-105%); transition:transform .26s cubic-bezier(.2,.8,.2,1); box-shadow:18px 0 55px rgba(9,32,22,.22); }
-.sidebar.open { transform:translateX(0); }
-.nav-scrim { position:fixed; inset:0; z-index:90; background:rgba(12,27,20,.42); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .22s; }
-.nav-scrim.open { opacity:1; pointer-events:auto; }
-.logo-toggle { flex-shrink:0; }
-@media (min-width:761px) {
-  .topbar { height:82px; }
-  .content { padding:clamp(22px,2.8vw,44px) clamp(22px,3.5vw,56px) 60px; }
-  .hero { min-height:210px; }
-  .metrics { grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); }
-}
-@media (max-width:760px) {
-  .topbar { height:72px; padding:0 14px; }
-  .content { padding:18px 14px 34px; }
-  .dashboard-grid { grid-template-columns:minmax(0,1fr); }
-  .hero { padding:26px 22px; }
-  .hero-aside { min-width:80px; }
-  .hero-aside .monogram { font-size:42px; }
-  .preview-ribbon { align-items:flex-start; }
-}
-
-
-/* Final responsive layout: full viewport, no narrow preview canvas. */
-html,body,#app{width:100%;min-width:320px;min-height:100%;margin:0}
-body{overflow-x:hidden}
-.app-shell{width:100%;max-width:none;min-height:100dvh;grid-template-columns:minmax(0,1fr)}
-.main{width:100%;min-width:0;max-width:none}
-.content{width:100%;max-width:none;margin:0 auto;padding:clamp(18px,2.8vw,42px) clamp(14px,3vw,48px) 56px}
-.topbar{width:100%;max-width:none;padding-inline:clamp(14px,2.6vw,42px)}
-/* H opens the atelier drawer on desktop and mobile; it is hidden until requested. */
-.sidebar{position:fixed!important;z-index:110!important;left:0!important;top:0!important;bottom:0!important;width:min(320px,88vw)!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow-y:auto!important;transform:translateX(-105%)!important;transition:transform .26s cubic-bezier(.2,.8,.2,1)!important;box-shadow:18px 0 55px rgba(9,32,22,.22)!important}
-.sidebar.open{transform:translateX(0)!important}
-.nav-scrim{position:fixed;inset:0;z-index:100;background:rgba(12,27,20,.42);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .22s}
-.nav-scrim.open{opacity:1;pointer-events:auto}
-.sidebar .brand{cursor:pointer}
-.mobile-menu{display:none!important}
-@media(min-width:761px){.app-shell{display:block}.topbar{height:82px}.content{padding-top:30px}.hero{min-height:205px}.metrics{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}}
-@media(max-width:760px){.app-shell{display:block}.topbar{height:72px;padding:0 14px}.content{padding:18px 14px 34px}.dashboard-grid{grid-template-columns:minmax(0,1fr)}.hero{padding:26px 22px}.hero-aside{min-width:80px}.login-wrap{min-height:100dvh}}
-
-
-/* Hriday HQ responsive sizing correction — keep the workspace full-width on desktop. */
-html, body, #app { width:100%; max-width:none; min-width:320px; margin:0; }
-body { overflow-x:hidden; }
-.app-shell, .main, .topbar, .content, #page-content { width:100%; max-width:none; min-width:0; margin-left:0; margin-right:0; box-sizing:border-box; }
-.app-shell { display:block; }
-.main { min-height:100vh; }
-.topbar { padding-inline:clamp(16px,3vw,44px); }
-.content { padding:clamp(18px,2.4vw,34px) clamp(16px,3.2vw,48px) 56px; }
-#page-content > *, .content > * { min-width:0; }
+.app-shell { display:block; width:100%; min-width:0; max-width:none; min-height:100vh; margin:0; padding:0; }
+.main { display:block; position:relative; width:100%; min-width:0; max-width:none; min-height:100vh; margin:0; padding:0; }
+.topbar { width:100%; min-width:0; max-width:none; height:82px; padding:0 clamp(16px,3vw,44px); }
+.top-left { display:flex; align-items:center; gap:15px; min-width:0; }
+.logo-toggle { width:46px; height:46px; flex:0 0 46px; border:1px solid var(--gold); border-radius:50%; background:var(--green); color:var(--gold-2); font:500 28px var(--font-display); box-shadow:0 5px 18px rgba(15,61,46,.16); transition:transform .18s,box-shadow .18s; }
+.logo-toggle:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(15,61,46,.22); }
+.content { display:block; width:100%; min-width:0; max-width:none; margin:0; padding:clamp(22px,2.8vw,42px) clamp(16px,3.2vw,48px) 56px; }
+#page-content, #page-content > *, .content > * { min-width:0; }
+.hero { width:100%; min-height:205px; }
 .metrics { grid-template-columns:repeat(4,minmax(0,1fr)); }
 .quick-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
 .dashboard-grid { grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr); }
-.table-wrap { max-width:100%; }
-@media (min-width:761px) {
-  .content { padding-top:30px; }
-  .hero { min-height:205px; }
-}
+.table-wrap { width:100%; max-width:100%; overflow:auto; }
+.metrics, .quick-grid, .dashboard-grid, .panel, .settings-grid, .report-grid, .split-layout { min-width:0; }
+img, video, canvas, svg { max-width:100%; }
+button, input, select, textarea { max-width:100%; }
+/* Navigation drawer stays hidden until the H monogram is clicked. */
+.sidebar { position:fixed !important; z-index:110 !important; left:0 !important; top:0 !important; bottom:0 !important; width:min(320px,88vw) !important; height:100dvh !important; min-height:0 !important; max-height:100dvh !important; overflow-y:auto !important; transform:translateX(-105%) !important; transition:transform .26s cubic-bezier(.2,.8,.2,1) !important; box-shadow:18px 0 55px rgba(9,32,22,.22) !important; }
+.sidebar.open { transform:translateX(0) !important; }
+.nav-scrim { position:fixed; inset:0; z-index:100; background:rgba(12,27,20,.42); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .22s; }
+.nav-scrim.open { opacity:1; pointer-events:auto; }
+.sidebar .brand { cursor:pointer; }
+.mobile-menu { display:none !important; }
 @media (max-width:1100px) {
+  .content { padding:24px clamp(18px,2.5vw,30px) 48px; }
   .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .quick-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .dashboard-grid { grid-template-columns:minmax(0,1fr); }
 }
 @media (max-width:760px) {
-  .topbar { height:72px; padding-inline:14px; }
+  .topbar { height:72px; padding:0 14px; gap:8px; }
+  .top-left { gap:10px; }
+  .logo-toggle { width:40px; height:40px; flex-basis:40px; font-size:25px; }
+  .page-title { font-size:clamp(21px,5vw,27px); }
+  .topbar .eyebrow { display:none; }
+  .top-actions { gap:6px; }
+  .searchbox { width:38px; padding:9px; justify-content:center; }
+  .searchbox input { display:none; }
   .content { padding:18px 14px 34px; }
+  .hero { padding:26px 22px; min-height:190px; }
+  .hero-aside { min-width:80px; }
+  .hero-aside .monogram { font-size:42px; }
   .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-  .quick-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .metric { padding:13px; }
+  .metric-value { font-size:26px; }
+  .quick-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
   .dashboard-grid, .settings-grid, .report-grid, .split-layout { grid-template-columns:minmax(0,1fr); }
-  .hero { padding:26px 22px; }
+  .form-grid { grid-template-columns:minmax(0,1fr); }
+  .field.full { grid-column:auto; }
+  .chat-layout { grid-template-columns:100px minmax(0,1fr); }
+  .chat-channels { padding:8px; }
+  .chat-channel { padding:9px 7px; font-size:10px; overflow:hidden; }
+  .chat-message { max-width:90%; }
+  .login-wrap { grid-template-columns:minmax(0,1fr); min-height:100dvh; padding:16px; gap:10px; }
+  .login-brand { padding:16px 8px 5px; min-height:230px; }
+  .login-brand h1 { margin:30px 0 10px; font-size:54px; }
+  .login-brand p { font-size:11px; margin:0; }
+  .login-card-wrap { align-items:start; }
+  .login-card { padding:23px; }
+  .preview-ribbon { align-items:flex-start; }
+  .panel { padding:15px; }
+  .bar-line { grid-template-columns:75px minmax(0,1fr) 55px; }
 }
 
 </style>
