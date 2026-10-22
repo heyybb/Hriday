@@ -259,8 +259,25 @@ button, input, select, textarea { max-width:100%; }
     gs?.addEventListener('input',e=>{state.search=e.target.value; if(modules[state.page]) renderTable(state.page); else renderGlobalSearchResults(false)});
     searchForm?.addEventListener('submit',e=>{e.preventDefault();state.search=(gs?.value||'').trim();if(!state.search){renderPageContent(false);return;}if(modules[state.page]){renderTable(state.page);return;}renderGlobalSearchResults(true)});
   }
+  const APP_NAV_KEY='hriday-hq-navigation';
+  let handlingPopState=false;
+  function rememberNavigation(){
+    try{history.replaceState({...history.state,hridayApp:true,page:state.page,search:state.search},'',location.href);history.pushState({hridayApp:true,page:state.page,search:state.search,internal:true},'',location.href)}catch{}
+  }
+  window.addEventListener('popstate',async event=>{
+    if(handlingPopState)return;
+    if(state.mode==='online'&&state.user){
+      handlingPopState=true;
+      const target=event.state?.hridayApp?event.state:null;
+      if(state.mobileNav){state.mobileNav=false;renderShell()}
+      else if(target&&target.page&&target.page!==state.page){state.page=target.page;state.search=target.search||'';await renderShell()}
+      else if(state.page!=='dashboard'){state.page='dashboard';state.search='';await renderShell()}
+      else {try{history.pushState({hridayApp:true,page:state.page,search:state.search,internal:true},'',location.href)}catch{}}
+      handlingPopState=false;
+    }
+  });
   async function renderShell(){
-    root.innerHTML=shellMarkup();bindShell();await renderPageContent(true);
+    root.innerHTML=shellMarkup();bindShell();await renderPageContent(true);rememberNavigation();
   }
   function showConnectionGuide(){openModal('Connect Hriday HQ to Supabase',`<div class="notice warning"><strong>This is a local preview.</strong> Data here is stored in this browser and isn't shared. For team use, connect Supabase and deploy the folder.</div><ol class="small-note" style="padding-left:19px;line-height:2"><li>In Supabase, open your existing project.</li><li>Open SQL Editor and run <strong>supabase/migrations/202610210001_hriday_hq.sql</strong>.</li><li>Activate your verified owner profile using the one-time SQL in README.md.</li><li>Copy the Project URL and publishable/anon key into <strong>config.js</strong>.</li><li>Host the folder using a static host, then sign in through the app.</li></ol><div class="notice">Never put the service_role key or database password in config.js or any frontend file. The publishable/anon key is safe only when RLS policies are correctly installed.</div><div class="form-actions"><button class="btn btn-primary" data-close-modal>Understood</button></div>`)}
   function openModal(title,body,subtitle=''){const r=document.getElementById('modal-root');if(!r)return;r.innerHTML=`<div class="modal-backdrop" id="modal-backdrop"><section class="modal" role="dialog" aria-modal="true"><div class="modal-header"><div><h2>${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="modal-close" data-close-modal aria-label="Close">×</button></div>${body}</section></div>`;r.querySelectorAll('[data-close-modal]').forEach(b=>b.addEventListener('click',()=>r.innerHTML=''));r.querySelector('#modal-backdrop')?.addEventListener('click',e=>{if(e.target.id==='modal-backdrop')r.innerHTML=''})}
