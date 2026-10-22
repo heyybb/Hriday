@@ -458,6 +458,29 @@ button, input, select, textarea { max-width:100%; }
   function moneyText(v){return fmtMoney(Number(v)||0)}
   // local event delegation and route controls
   document.addEventListener('click',e=>{const q=e.target.closest('[data-quick]');if(q){state.page=q.dataset.quick;state.search='';renderShell()}const p=e.target.closest('[data-page]');if(p&&!p.closest('.sidebar')){state.page=p.dataset.page;renderShell()}const team=e.target.closest('[data-team-help]');if(team)teamSetupModal()});
+  // Security: sign out authenticated users after 15 minutes without activity.
+  const IDLE_LOGOUT_MS = 15 * 60 * 1000;
+  let idleLogoutTimer = null;
+  function resetIdleLogout(){
+    if(idleLogoutTimer){clearTimeout(idleLogoutTimer);idleLogoutTimer=null}
+    if(!state.session || !db || state.mode!=='online')return;
+    idleLogoutTimer=setTimeout(async()=>{
+      idleLogoutTimer=null;
+      try{await db.auth.signOut({scope:'local'})}catch(err){console.warn('Idle sign-out:',err)}
+      state.session=null;state.user=null;state.profile=null;
+      renderLogin('You were signed out after 15 minutes of inactivity. Please sign in again.');
+    },IDLE_LOGOUT_MS);
+  }
+  ['pointerdown','keydown','touchstart','scroll','click'].forEach(eventName=>{
+    window.addEventListener(eventName,resetIdleLogout,{passive:true});
+  });
+  window.addEventListener('storage',event=>{
+    if(event.key && event.key.includes('supabase.auth.token') && event.newValue===null){
+      state.session=null;state.user=null;
+      if(idleLogoutTimer){clearTimeout(idleLogoutTimer);idleLogoutTimer=null}
+      renderLogin('Your session ended in another tab. Please sign in again.');
+    }
+  });
   async function start(){
     if(!hasConfig){state.mode='local';renderUnconfiguredShell();return}
     state.mode='online';
@@ -465,8 +488,8 @@ button, input, select, textarea { max-width:100%; }
     if(!sdkReady){renderLogin('Supabase SDK could not load. Check your internet connection, or verify config.js if you intended a local preview.');return}
     try{
       db=window.supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});state.client=db;state.online=true;
-      const {data,error}=await db.auth.getSession();if(error)throw error;state.session=data.session;state.user=data.session?.user||null;
-      if(!state.session){renderLogin();db.auth.onAuthStateChange((_event,session)=>{state.session=session;state.user=session?.user||null;if(session)setTimeout(()=>bootstrapProfile(),0);else renderLogin()});return}
+      const {data,error}=await db.auth.getSession();if(error)throw error;state.session=data.session;state.user=data.session?.user||null;resetIdleLogout();
+      if(!state.session){renderLogin();db.auth.onAuthStateChange((_event,session)=>{state.session=session;state.user=session?.user||null;resetIdleLogout();if(session)setTimeout(()=>bootstrapProfile(),0);else renderLogin()});return}
       await bootstrapProfile();db.auth.onAuthStateChange((_event,session)=>{state.session=session;state.user=session?.user||null;if(session)setTimeout(()=>bootstrapProfile(),0);else renderLogin()});
       if('serviceWorker' in navigator && location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('Hriday offline shell:',e));
     }catch(err){console.error('Hriday start:',err);renderLogin('Could not start the connected workspace. Check your Supabase URL/key and auth configuration.')}
