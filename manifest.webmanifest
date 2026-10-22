@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "Hriday HQ",
+  "short_name": "Hriday HQ",
+  "description": "The atelier, organised.",
+  "lang": "en-IN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F0E6",
+  "theme_color": "#0F3D2E",
+  "icons": [
+    {
+      "src": "./icons/hriday-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
