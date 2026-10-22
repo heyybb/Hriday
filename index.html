@@ -490,7 +490,7 @@ button, input, select, textarea { max-width:100%; }
       db=window.supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});state.client=db;state.online=true;
       const {data,error}=await db.auth.getSession();if(error)throw error;state.session=data.session;state.user=data.session?.user||null;resetIdleLogout();
       if(!state.session){renderLogin();db.auth.onAuthStateChange((_event,session)=>{state.session=session;state.user=session?.user||null;resetIdleLogout();if(session)setTimeout(()=>bootstrapProfile(),0);else renderLogin()});return}
-      await bootstrapProfile();db.auth.onAuthStateChange((_event,session)=>{state.session=session;state.user=session?.user||null;if(session)setTimeout(()=>bootstrapProfile(),0);else renderLogin()});
+      await bootstrapProfile();db.auth.onAuthStateChange((_event,session)=>{state.session=session;state.user=session?.user||null;resetIdleLogout();if(session)setTimeout(()=>bootstrapProfile(),0);else renderLogin()});
       if('serviceWorker' in navigator && location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('Hriday offline shell:',e));
     }catch(err){console.error('Hriday start:',err);renderLogin('Could not start the connected workspace. Check your Supabase URL/key and auth configuration.')}
   }
