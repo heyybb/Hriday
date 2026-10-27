@@ -99,7 +99,7 @@ button, input, select, textarea { max-width:100%; }
   const CONFIG = window.HRIDAY_CONFIG || {};
   const hasConfig = Boolean(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
   let db = null;
-  function loadSupabaseSdk(){if(window.supabase?.createClient)return Promise.resolve(true);return new Promise(resolve=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';script.onload=()=>resolve(Boolean(window.supabase?.createClient));script.onerror=()=>resolve(false);document.head.appendChild(script)});}
+  function loadSupabaseSdk(){if(window.supabase?.createClient)return Promise.resolve(true);return new Promise(resolve=>{let settled=false;const finish=ok=>{if(settled)return;settled=true;clearTimeout(timer);resolve(ok)};const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';script.async=true;script.onload=()=>finish(Boolean(window.supabase?.createClient));script.onerror=()=>finish(false);const timer=setTimeout(()=>finish(false),10000);document.head.appendChild(script)});}
   const STORE_KEY = 'hriday_hq_standalone_v1';
   let memoryStore = {};
   let storageWarningShown = false;
@@ -535,7 +535,7 @@ button, input, select, textarea { max-width:100%; }
     if(!hasConfig){state.mode='local';renderUnconfiguredShell();return}
     state.mode='online';
     const sdkReady=await loadSupabaseSdk();
-    if(!sdkReady){renderLogin('Supabase SDK could not load. Check your internet connection, or verify config.js if you intended a local preview.');return}
+    if(!sdkReady){renderLogin('Hriday could not connect to its login library. Check your internet, then tap Reload. If this continues, clear the site cache and reopen Hriday HQ.');return}
     try{
       db=window.supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});state.client=db;state.online=true;
       const {data,error}=await db.auth.getSession();if(error)throw error;state.session=data.session;state.user=data.session?.user||null;resetIdleLogout();
