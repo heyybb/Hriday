@@ -1,4 +1,4 @@
-const CACHE = "hriday-hq-shell-v1";
+const CACHE = "hriday-hq-shell-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/hriday-icon.svg"];
 
 self.addEventListener("install", event => {
