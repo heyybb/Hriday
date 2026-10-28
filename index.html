@@ -490,7 +490,7 @@ button, input, select, textarea { max-width:100%; }
       const n=new Notification(String(row.title||'Hriday HQ update'),{body:String(row.body||'There is a workspace update.'),icon:'./icons/hriday-icon.svg',tag:String(row.id||'hriday-update')});
       n.onclick=()=>{
         window.focus();
-        const target=String(row.link_path||'notifications').replace(/^\\/+/, '');
+        const target=String(row.link_path||'notifications').split('/').join('');
         if(['products','tasks','production','marketing','files','customers','orders','materials','notifications','dashboard'].includes(target)){state.page=target;state.search='';renderShell()}
         n.close();
       };
