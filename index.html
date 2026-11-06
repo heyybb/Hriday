@@ -134,7 +134,7 @@ button, input, select, textarea { max-width:100%; }
   };
   const nav = [
     {label:'Workspace',items:[['dashboard','Overview','⌂'],['products','Studio & catalogue','◇'],['garment-costs','Garment costing','₹'],['customers','Client book','♙'],['orders','Sales & orders','▣'],['order-items','Order line items','≡'],['files','Asset library','▧']]},
-    {label:'Operations',items:[['materials','Materials & stock','▤'],['movements','Stock ledger','↔'],['suppliers','Supplier book','♧'],['purchases','Purchasing','⇩'],['purchase-items','Purchase line items','≡'],['supplier-payments','Supplier payments','₹'],['production','Atelier production','⚒'],['production-materials','Production material usage','▤'],['tasks','Team tasks','☷'],['task-comments','Task comments','≡']]},
+    {label:'Operations',items:[['materials','Materials & stock','▤'],['movements','Stock ledger','↔'],['suppliers','Supplier book','♧'],['purchases','Purchasing','⇩'],['purchase-items','Purchase line items','≡'],['supplier-payments','Supplier payments','₹'],['production','Atelier production','⚒'],['production-materials','Production material usage','▤'],['tasks','Team tasks','☷'],['attendance','Attendance','◷'],['task-comments','Task comments','≡']]},
     {label:'Business',items:[['chat','Team messages','◌'],['payments','Payments & receipts','₹'],['expenses','Expenses','↗'],['reports','Reports & insights','▥'],['marketing','Marketing studio','✳']]},
     {label:'Administration',items:[['team','Team & permissions','♙'],['settings','Settings','⚙']]}
   ];
@@ -148,7 +148,7 @@ button, input, select, textarea { max-width:100%; }
   function canAccess(page){
     if(isAdmin()) return true;
     // Designer workspace is intentionally limited to design/product work and assigned collaboration.
-    const designerPages = new Set(['dashboard','products','orders','materials','production','tasks','task-comments','marketing','chat','files','settings']);
+    const designerPages = new Set(['dashboard','products','orders','materials','production','tasks','attendance','task-comments','marketing','chat','files','settings']);
     return state.role==='designer' && designerPages.has(page) && !(adminOnlyPages.has(page)||modules[page]?.adminOnly);
   }
   function currentUserId(){return state.user?.id||'local-owner'}
@@ -285,6 +285,7 @@ button, input, select, textarea { max-width:100%; }
   function openModal(title,body,subtitle=''){const r=document.getElementById('modal-root');if(!r)return;r.innerHTML=`<div class="modal-backdrop" id="modal-backdrop"><section class="modal" role="dialog" aria-modal="true"><div class="modal-header"><div><h2>${esc(title)}</h2>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button class="modal-close" data-close-modal aria-label="Close">×</button></div>${body}</section></div>`;r.querySelectorAll('[data-close-modal]').forEach(b=>b.addEventListener('click',()=>r.innerHTML=''));r.querySelector('#modal-backdrop')?.addEventListener('click',e=>{if(e.target.id==='modal-backdrop')r.innerHTML=''})}
   async function renderPageContent(fetch=true){const host=document.getElementById('page-content');if(!host)return;try{
     if(state.page==='dashboard'){host.innerHTML=dashboardMarkup();await fillDashboard();return}
+    if(state.page==='attendance'){await renderAttendancePage(host);return}
     if(state.page==='reports'){host.innerHTML=reportsMarkup();await fillReports();return}
     if(state.page==='team'){host.innerHTML=teamMarkup();await fillTeam();return}
     if(state.page==='settings'){host.innerHTML=settingsMarkup();bindSettings();return}
@@ -295,6 +296,36 @@ button, input, select, textarea { max-width:100%; }
     if(!canAccess(state.page)){host.innerHTML=`<div class="panel"><div class="empty-state"><div class="empty-symbol">⌑</div><strong>Owner access required</strong><p>This area contains restricted business information. Sign in using an authorised owner account.</p></div></div>`;return}
     host.innerHTML=moduleMarkup(state.page);if(fetch)await refreshModule(state.page);renderTable(state.page);
   }catch(err){host.innerHTML=`<div class="notice error"><strong>Couldn't load this section.</strong><br>${esc(err.message||'Check your connection and database setup.')}<p><button class="btn btn-secondary btn-small" id="retry-load">Retry</button></p></div>`;document.getElementById('retry-load')?.addEventListener('click',()=>renderPageContent(true));console.error('Hriday page load:',err)}}
+
+  function attendanceDate(value=new Date()){const d=new Date(value);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
+  function attendanceClock(value){return value?new Date(value).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}):'—'}
+  function attendanceDuration(start,end){if(!start)return '—';const ms=Math.max(0,(end?new Date(end).getTime():Date.now())-new Date(start).getTime());const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);return h+'h '+String(m).padStart(2,'0')+'m'}
+  async function renderAttendancePage(host){
+    host.innerHTML=`<div class="section-heading" style="margin-top:0"><div><h2>Attendance</h2><p>Check in from anywhere, track working hours and review attendance history.</p></div><span class="tag">Asia/Kolkata</span></div><div id="attendance-content"><div class="panel"><div class="empty-state"><strong>Loading attendance</strong><p>Fetching secure attendance records.</p></div></div></div>`;
+    const [rows,profiles]=await Promise.all([fetchTable('attendance',{limit:1000}),isAdmin()?fetchTable('profiles',{limit:500}):Promise.resolve([state.profile||{}])]);
+    const today=attendanceDate(),mine=rows.filter(r=>r.user_id===currentUserId()).sort((a,b)=>new Date(b.check_in)-new Date(a.check_in));
+    const open=mine.find(r=>!r.check_out&&r.work_date===today)||null;
+    const month=today.slice(0,7),monthRows=mine.filter(r=>String(r.work_date).startsWith(month));
+    const presentDays=new Set(monthRows.map(r=>r.work_date)).size;
+    const totalMs=monthRows.reduce((n,r)=>n+Math.max(0,(r.check_out?new Date(r.check_out).getTime():Date.now())-new Date(r.check_in).getTime()),0);
+    const hostBody=document.getElementById('attendance-content');
+    const teamRows=isAdmin()?rows.filter(r=>String(r.work_date)===today).sort((a,b)=>new Date(a.check_in)-new Date(b.check_in)):[];
+    const nameOf=id=>{const p=profiles.find(x=>x.id===id);return p?.display_name||p?.full_name||p?.email||'Team member'};
+    hostBody.innerHTML=`<div class="dashboard-grid" style="grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);margin-top:0"><div class="panel"><div class="panel-heading"><div><h3>Today's shift</h3><p>${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Kolkata'})}</p></div><span class="status-pill ${open?'gold':'grey'}">${open?'On the clock':'Not checked in'}</span></div><div class="report-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="report-card"><div class="label">Check-in</div><div class="value">${open?attendanceClock(open.check_in):'—'}</div></div><div class="report-card"><div class="label">Working time</div><div class="value" id="attendance-live-hours">${open?attendanceDuration(open.check_in,null):'0h 00m'}</div></div></div><div class="form-actions" style="justify-content:flex-start;border:0;margin:0;padding-top:18px">${open?'<button class="btn btn-gold" id="attendance-checkout">↪ Check Out</button>':'<button class="btn btn-primary" id="attendance-checkin">＋ Check In</button>'}</div><p class="small-note">Your attendance is recorded using the server timestamp. Location access is not requested.</p></div><div class="panel"><div class="panel-heading"><div><h3>This month</h3><p>Your attendance summary</p></div></div><div class="report-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="report-card"><div class="label">Days recorded</div><div class="value">${presentDays}</div></div><div class="report-card"><div class="label">Hours logged</div><div class="value">${Math.floor(totalMs/3600000)}h</div></div></div></div></div>
+    <div class="section-heading"><div><h2>My attendance history</h2><p>Recent check-in and check-out records.</p></div></div><div class="table-wrap"><table style="min-width:560px"><thead><tr><th>Date</th><th>Check-in</th><th>Check-out</th><th>Hours</th><th>Status</th></tr></thead><tbody>${monthRows.map(r=>`<tr><td>${esc(fmtDate(r.work_date))}</td><td>${esc(attendanceClock(r.check_in))}</td><td>${esc(attendanceClock(r.check_out))}</td><td>${esc(attendanceDuration(r.check_in,r.check_out))}</td><td><span class="status-pill ${r.check_out?'':'gold'}">${r.check_out?'Completed':'In progress'}</span></td></tr>`).join('')||'<tr><td colspan="5" class="cell-muted">No attendance records this month.</td></tr>'}</tbody></table></div>
+    ${isAdmin()?'<div class="section-heading"><div><h2>Team · today</h2><p>Live attendance across the workspace.</p></div></div><div class="table-wrap"><table style="min-width:560px"><thead><tr><th>Team member</th><th>Check-in</th><th>Check-out</th><th>Hours</th><th>Status</th></tr></thead><tbody>'+teamRows.map(r=>`<tr><td class="cell-primary">${esc(nameOf(r.user_id))}</td><td>${esc(attendanceClock(r.check_in))}</td><td>${esc(attendanceClock(r.check_out))}</td><td>${esc(attendanceDuration(r.check_in,r.check_out))}</td><td><span class="status-pill ${r.check_out?'':'gold'}">${r.check_out?'Completed':'Working'}</span></td></tr>`).join('')||'<tr><td colspan="5" class="cell-muted">No team check-ins recorded today.</td></tr>'+'</tbody></table></div>':''}`;
+    document.getElementById('attendance-checkin')?.addEventListener('click',async()=>{
+      const b=document.getElementById('attendance-checkin');b.disabled=true;
+      try{await insertRow('attendance',{user_id:currentUserId(),work_date:attendanceDate(),check_in:new Date().toISOString(),timezone:'Asia/Kolkata'});toast('Check-in recorded. Have a productive day!');await renderAttendancePage(host)}
+      catch(e){toast(e.message?.includes('attendance_one_open_shift')?'You already have an open shift. Check out first.':e.message||'Could not check in.','error');b.disabled=false}
+    });
+    document.getElementById('attendance-checkout')?.addEventListener('click',async()=>{
+      const b=document.getElementById('attendance-checkout');b.disabled=true;
+      try{await updateRow('attendance',open.id,{check_out:new Date().toISOString()});toast('Check-out recorded.');await renderAttendancePage(host)}
+      catch(e){toast(e.message||'Could not check out.','error');b.disabled=false}
+    });
+    if(open){const tick=()=>{const el=document.getElementById('attendance-live-hours');if(el)el.textContent=attendanceDuration(open.check_in,null)};tick();setInterval(tick,60000)}
+  }
   function renderGlobalSearchResults(navigate){
     const host=document.getElementById('page-content');if(!host)return;
     const q=String(state.search||'').trim().toLowerCase();
