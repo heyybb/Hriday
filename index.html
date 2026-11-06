@@ -297,10 +297,12 @@ button, input, select, textarea { max-width:100%; }
     host.innerHTML=moduleMarkup(state.page);if(fetch)await refreshModule(state.page);renderTable(state.page);
   }catch(err){host.innerHTML=`<div class="notice error"><strong>Couldn't load this section.</strong><br>${esc(err.message||'Check your connection and database setup.')}<p><button class="btn btn-secondary btn-small" id="retry-load">Retry</button></p></div>`;document.getElementById('retry-load')?.addEventListener('click',()=>renderPageContent(true));console.error('Hriday page load:',err)}}
 
+  let attendanceLiveTimer=null;
   function attendanceDate(value=new Date()){const d=new Date(value);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
   function attendanceClock(value){return value?new Date(value).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'}):'—'}
   function attendanceDuration(start,end){if(!start)return '—';const ms=Math.max(0,(end?new Date(end).getTime():Date.now())-new Date(start).getTime());const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);return h+'h '+String(m).padStart(2,'0')+'m'}
   async function renderAttendancePage(host){
+    if(attendanceLiveTimer){clearInterval(attendanceLiveTimer);attendanceLiveTimer=null;}
     host.innerHTML=`<div class="section-heading" style="margin-top:0"><div><h2>Attendance</h2><p>Check in from anywhere, track working hours and review attendance history.</p></div><span class="tag">Asia/Kolkata</span></div><div id="attendance-content"><div class="panel"><div class="empty-state"><strong>Loading attendance</strong><p>Fetching secure attendance records.</p></div></div></div>`;
     const [rows,profiles]=await Promise.all([fetchTable('attendance',{limit:1000}),isAdmin()?fetchTable('profiles',{limit:500}):Promise.resolve([state.profile||{}])]);
     const today=attendanceDate(),mine=rows.filter(r=>r.user_id===currentUserId()).sort((a,b)=>new Date(b.check_in)-new Date(a.check_in));
@@ -324,7 +326,7 @@ button, input, select, textarea { max-width:100%; }
       try{await updateRow('attendance',open.id,{check_out:new Date().toISOString()});toast('Check-out recorded.');await renderAttendancePage(host)}
       catch(e){toast(e.message||'Could not check out.','error');b.disabled=false}
     });
-    if(open){const tick=()=>{const el=document.getElementById('attendance-live-hours');if(el)el.textContent=attendanceDuration(open.check_in,null)};tick();setInterval(tick,60000)}
+    if(open){const tick=()=>{const el=document.getElementById('attendance-live-hours');if(el)el.textContent=attendanceDuration(open.check_in,null)};tick();attendanceLiveTimer=setInterval(tick,60000)}
   }
   function renderGlobalSearchResults(navigate){
     const host=document.getElementById('page-content');if(!host)return;
